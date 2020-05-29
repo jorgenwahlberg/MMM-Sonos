@@ -67,18 +67,22 @@
 		}
 	},
 	renderRoom: function(state, artist, track, cover, roomName) {
+		if (!artist && !track && !cover) {
+			artist = "TV";
+		}
+		if (track && track.indexOf("x-sonosapi-stream:") == 0) {
+			track = undefined;
+		}
 		artist = artist?artist:"";
-		track = track?track:"";
+		//track = track?track:"";
 		cover = cover?cover:"";
 		var room = '';
-		// if Sonos Playbar is in TV mode, no title is provided and therefore the room should not be displayed
-		var isEmpty = (artist && artist.trim().length) == 0
-			&& (track && track.trim().length) == 0
-			&& (cover && cover.trim().length) == 0;
+
+
 		// show song if PLAYING
-		if(state === 'PLAYING' && !isEmpty) {
+		if(state === 'PLAYING') {
 			room += this.html.song.format(
-				this.html.name.format(artist, track)+
+				(track ? this.html.artistAndTrack.format(artist, track) : this.html.artist.format(artist, track))+
 				// show album art if 'showAlbumArt' is set
 				(this.config.showAlbumArt
 					?this.html.art.format(cover)
@@ -98,7 +102,8 @@
 		roomWrapper: '<li>{0}</li>',
 		room: '<div class="room xsmall">{0}</div>',
 		song: '<div>{0}</div>',
-		name: '<div class="name normal medium"><div>{0}</div><div>{1}</div></div>',
+		artist: '<div class="name normal medium"><div>{0}</div></div>',
+		artistAndTrack: '<div class="name normal medium"><div>{0}</div><div>{1}</div></div>',
 		art: '<div class="art"><img src="{0}"/></div>'
 	},
 	getScripts: function() {
