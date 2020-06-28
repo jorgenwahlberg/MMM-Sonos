@@ -82,7 +82,8 @@
 		// show song if PLAYING
 		if(state === 'PLAYING') {
 			room += this.html.song.format(
-				(track ? this.html.artistAndTrack.format(artist, track) : this.html.artist.format(artist, track))+
+				this.html.artistBlock.format((track ? this.html.artistAndTrack.format(artist, track) : this.html.artist.format(artist, track))
+				+ (this.config.showRoomName && (state === 'PLAYING' || this.config.showStoppedRoom) ? this.html.room.format(roomName) : ""))+
 				// show album art if 'showAlbumArt' is set
 				(this.config.showAlbumArt
 					?this.html.art.format(cover)
@@ -91,10 +92,6 @@
 				//+"<span>"+streamInfo+"</span>"
 			);
 		}
-		// show room name if 'showRoomName' is set and PLAYING or 'showStoppedRoom' is set
-		if(this.config.showRoomName && (state === 'PLAYING' || this.config.showStoppedRoom)) {
-			room += this.html.room.format(roomName);
-		}
 		return  this.html.roomWrapper.format(room);
 	},
 	html: {
@@ -102,8 +99,9 @@
 		roomWrapper: '<li>{0}</li>',
 		room: '<div class="room xsmall">{0}</div>',
 		song: '<div>{0}</div>',
-		artist: '<div class="name normal medium"><div>{0}</div></div>',
-		artistAndTrack: '<div class="name normal medium"><div>{0}</div><div>{1}</div></div>',
+		artistBlock: '<div class="name normal medium">{0}</div>',
+		artist: '<div>{0}</div>',
+		artistAndTrack: '<div>{0}</div><div>{1}</div>',
 		art: '<div class="art"><img src="{0}"/></div>'
 	},
 	getScripts: function() {
