@@ -73,8 +73,8 @@
 		if (track && track.indexOf("x-sonosapi-stream:") == 0) {
 			track = undefined;
 		}
-		if (track.length > 44) {
-			track = track.substring(0, 40) + "&nbsp;...";
+		if (track.length > 50) {
+			track = track.substring(0, 45) + "&nbsp;...";
 		}
 		artist = artist?artist:"";
 		//track = track?track:"";
