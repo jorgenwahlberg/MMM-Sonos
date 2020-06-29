@@ -73,6 +73,9 @@
 		if (track && track.indexOf("x-sonosapi-stream:") == 0) {
 			track = undefined;
 		}
+		if (track.length > 44) {
+			track = track.substring(0, 40) + "&nbsp;...";
+		}
 		artist = artist?artist:"";
 		//track = track?track:"";
 		cover = cover?cover:"";
@@ -82,14 +85,17 @@
 		// show song if PLAYING
 		if(state === 'PLAYING') {
 			room += this.html.song.format(
-				this.html.artistBlock.format((track ? this.html.artistAndTrack.format(artist, track) : this.html.artist.format(artist, track))
-				+ (this.config.showRoomName && (state === 'PLAYING' || this.config.showStoppedRoom) ? this.html.room.format(roomName) : ""))+
 				// show album art if 'showAlbumArt' is set
 				(this.config.showAlbumArt
 					?this.html.art.format(cover)
 					:''
-				)
+				)+				
+				this.html.artistBlock.format(
+					(track ? this.html.artistAndTrack.format(artist, track) : this.html.artist.format(artist, track))
+					
+				+ (this.config.showRoomName && (state === 'PLAYING' || this.config.showStoppedRoom) ? this.html.room.format(roomName) : ""
 				//+"<span>"+streamInfo+"</span>"
+				))
 			);
 		}
 		return  this.html.roomWrapper.format(room);
