@@ -135,9 +135,9 @@
 		return $('<div class="sonos">'+content+'</div>')[0];
 	},
 	socketNotificationReceived: function(notification, payload) {
-      if (notification === 'SONOS_DATA') {
-          Log.info('received SONOS_DATA');
-					this.render(payload);
+	if (notification === 'SONOS_DATA') {
+		//Log.info('received SONOS_DATA');
+		this.render(payload);
       }
   }
 });
