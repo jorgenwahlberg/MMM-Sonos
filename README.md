@@ -57,7 +57,7 @@ cd ~/MagicMirror/modules
 Clone this repository:
 
 ```
-git clone https://github.com/Snille/MMM-Sonos.git
+git clone https://github.com/theskyisthelimit/MMM-Sonos.git
 ```
 Install Node-Modules
 ```
