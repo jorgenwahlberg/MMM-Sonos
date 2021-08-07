@@ -1,3 +1,8 @@
+> The NPM module "Request" was removed with Magicmirror `v2.16` This has
+> led to the fact that Magicmirror can no longer be started under
+> Docker, for example. With this fork, the deprecated npm module
+> "Request" is installed locally in the module's directory.
+
 # MMM-Sonos
 
 <p>
@@ -54,6 +59,15 @@ Clone this repository:
 ```
 git clone https://github.com/Snille/MMM-Sonos.git
 ```
+Install Node-Modules
+```
+npm init
+````
+&
+````
+npm install request
+````
+
 
 Add some [config entries](#configuration) to your config.js file. After that the content will be added to your mirror.
 
