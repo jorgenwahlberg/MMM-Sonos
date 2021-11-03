@@ -1,12 +1,50 @@
+<<<<<<< HEAD
 [![code climate](https://codeclimate.com/github/CFenner/MMM-Sonos/badges/gpa.svg)](https://codeclimate.com/github/CFenner/MMM-Sonos)
 [![API](https://img.shields.io/badge/api-Sonos-orange.svg)](https://github.com/jishi/node-sonos-http-api)
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://choosealicense.com/licenses/mit/)
+=======
+> The NPM module "Request" was removed with Magicmirror `v2.16` This has
+> led to the fact that Magicmirror can no longer be started under
+> Docker, for example. With this fork, the deprecated npm module
+> "Request" is installed locally in the module's directory.
+
+# MMM-Sonos
+>>>>>>> 211d706417dc89305e370b743a62290bb2e9d117
 
 # MagicMirror-Sonos-Module
 
+<<<<<<< HEAD
 This is an adaption of the [MagicMirror-SonosModule](https://github.com/Vaggan/MagicMirror-SonosModule) by [Vaggan](https://github.com/Vaggan). It was modified to fit the new module system and got some enhancements in visualisation an configuration.
+=======
+This is an adaption and modification of of [Vaggan's](https://github.com/Vaggan) [MagicMirror-SonosModule](https://github.com/Vaggan/MagicMirror-SonosModule) and [CFenner's](https://github.com/CFenner) [MagicMirror-SonosModule](https://github.com/CFenner/MagicMirror-Sonos-Module). It was modified to get some enhancements in visualisation an configuration. Also the module hides itself when not playing now.
 
-![Sonos Module](https://github.com/CFenner/MagicMirror-Sonos-Module/blob/master/.github/preview.png)
+Note from Snille: I'm new to the MagicMirror world and Node.js, this is my first attempt to modify a module. There are probably lot's of things that could have been done better. :)
+
+When starting the Mirror:
+
+![Sonos Module Loading](https://github.com/Snille/MMM-Sonos/blob/master/.github/Sonos-Loading.png)
+
+Module on the Left side of the Mirror:
+
+![Sonos Module Left](https://github.com/Snille/MMM-Sonos/blob/master/.github/Sonos-Left.png)
+
+Module in the Center of the Mirror:
+
+![Sonos Module Center](https://github.com/Snille/MMM-Sonos/blob/master/.github/Sonos-Center.png)
+
+Module in the Center of the Mirror playing in 3 different zones:
+
+![Sonos Module Center](https://github.com/Snille/MMM-Sonos/blob/master/.github/Sonos-Multizone.png)
+
+Module on the Right side of the Mirror:
+
+![Sonos Module Right](https://github.com/Snille/MMM-Sonos/blob/master/.github/Sonos-Right.png)
+
+This is my own mirrors view (Top Center) using some addition in the custom.css [see below](#custom-css)
+
+![Sonos Module Custom CSS](https://github.com/Snille/MMM-Sonos/blob/master/.github/Sonos-Custom-CSS.png)
+>>>>>>> 211d706417dc89305e370b743a62290bb2e9d117
+
 
 ## Usage
 
@@ -17,6 +55,7 @@ _Prerequisites_
 
 ### Installation
 
+<<<<<<< HEAD
 Navigate into your MagicMirror's modules folder:
 
 ```shell
@@ -31,6 +70,30 @@ Navigate to the new MMM-Sonos folder and install the node dependencies.
 cd MMM-Sonos/ && npm install --production
 ```
 Configure the module in your config.js file.
+=======
+In your terminal, go to your MagicMirror's Module folder:
+
+```
+cd ~/MagicMirror/modules
+```
+
+Clone this repository:
+
+```
+git clone https://github.com/theskyisthelimit/MMM-Sonos.git
+```
+Install Node-Modules
+```
+npm init
+````
+&
+````
+npm install request
+````
+
+
+Add some [config entries](#configuration) to your config.js file. After that the content will be added to your mirror.
+>>>>>>> 211d706417dc89305e370b743a62290bb2e9d117
 
 ### Configuration
 
@@ -39,18 +102,83 @@ To run the module properly, you need to add the following data to your config.js
 ```
 {
 	module: 'MMM-Sonos',
+<<<<<<< HEAD
 	position: 'top_right', // you may choose any location
 	config: {}
+=======
+	header: "Playing on SONOS",
+	position: "top_center", // This can be any of the regions, best results in center regions
+	classes: "default everyone",
+	config: {
+		// See 'Configuration options' for more information.
+	}
+>>>>>>> 211d706417dc89305e370b743a62290bb2e9d117
 }
 ```
 
-You also can set some options to hide different parts of the module.
+Here are the configuration options to configure the module.
 
+<<<<<<< HEAD
 | Option | Description | Default |
 |---|---|---|
 |`showStoppedRoom`|Trigger the visualization of stopped rooms.|`true`|
 |`showAlbumArt`|Trigger the visualization of the album art.|`true`|
 |`showRoomName`|Trigger the visualization of the room name.|`true`|
+=======
+| Option | Description |
+|---|---| 
+|`showStoppedRoom`|Trigger the visualization of stopped rooms.<br><br>**Default value:** `true`|
+|`showAlbumArt`|Trigger the visualization of the album art.<br><br>**Default value:** `true`|
+|`showRoomName`|Trigger the visualization of the room name.<br><br>**Default value:** `true`|
+|`preRoomText`|Text to be displayed before the zone name.<br><br>**Default value:** `Zone: `|
+|`preArtistText`|Text to be displayed before the artist name.<br><br>**Default value:** `Artist: `|
+|`preTrackText`|Text to be displayed before the track name.<br><br>**Default value:** `Track: `|
+|`preTypeText`|Text to be displayed before the source name.<br><br>**Default value:** `Source: `|
+|`animationSpeed`|Lenght of the fade animation.<br><br>**Default value:** `1000`|
+|`updateInterval`|Update interval.<br><br>**Default value:** `0.5`|
+|`apiBase`|http link to the SONOS API.<br><br>**Default value:** `http://localhost'`|
+|`apiPort`|SONOS API port.<br><br>**Default value:** `5005`|
+|`apiEndpoint`|Link to the "zones" information on the SONOS API.<br><br>**Default value:** `zones`|
+|`exclude`|Zones names to exclude ["Secret-Room","Greenhouse"].<br><br>**Default value:** `[]`|
+
+### Custom-CSS
+
+Here is my CSS settings for the module that I have added to my custom.css to give it the exta special look. :)
+
+```
+/* Sonos --------------------------------------------*/
+.sonos ul .type {
+    font-size: 12px;
+	padding: 0px 0px;
+	line-height: 12px;
+	width: 260px;
+}
+.sonos ul .room {
+    font-size: 16px;
+	padding: 0px 0px;
+	line-height: 16px;
+	width: 260px;
+}
+.sonos ul .song {
+	padding: 0px 0px;
+	position: relative;
+}
+.sonos ul .art img {
+    height: 60px;
+    width: 60px;
+	border-radius: 50%;
+	margin: 0px 0px;
+	border: 2px solid #FFF;
+}
+.sonos ul .name {
+    width: 200px;
+    font-size: 16px;
+	padding: 0px 4px;
+	line-height: 16px;
+}
+/*****************************************************/
+```
+>>>>>>> 211d706417dc89305e370b743a62290bb2e9d117
 
 ### Known Issues
 
