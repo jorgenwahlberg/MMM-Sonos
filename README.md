@@ -1,21 +1,16 @@
-<<<<<<< HEAD
 [![code climate](https://codeclimate.com/github/CFenner/MMM-Sonos/badges/gpa.svg)](https://codeclimate.com/github/CFenner/MMM-Sonos)
 [![API](https://img.shields.io/badge/api-Sonos-orange.svg)](https://github.com/jishi/node-sonos-http-api)
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://choosealicense.com/licenses/mit/)
-=======
-> The NPM module "Request" was removed with Magicmirror `v2.16` This has
-> led to the fact that Magicmirror can no longer be started under
-> Docker, for example. With this fork, the deprecated npm module
-> "Request" is installed locally in the module's directory.
+
+The NPM module "Request" was removed with Magicmirror `v2.16` This has
+led to the fact that Magicmirror can no longer be started under
+Docker, for example. With this fork, the deprecated npm module
+"Request" is installed locally in the module's directory.
 
 # MMM-Sonos
->>>>>>> 211d706417dc89305e370b743a62290bb2e9d117
 
 # MagicMirror-Sonos-Module
 
-<<<<<<< HEAD
-This is an adaption of the [MagicMirror-SonosModule](https://github.com/Vaggan/MagicMirror-SonosModule) by [Vaggan](https://github.com/Vaggan). It was modified to fit the new module system and got some enhancements in visualisation an configuration.
-=======
 This is an adaption and modification of of [Vaggan's](https://github.com/Vaggan) [MagicMirror-SonosModule](https://github.com/Vaggan/MagicMirror-SonosModule) and [CFenner's](https://github.com/CFenner) [MagicMirror-SonosModule](https://github.com/CFenner/MagicMirror-Sonos-Module). It was modified to get some enhancements in visualisation an configuration. Also the module hides itself when not playing now.
 
 Note from Snille: I'm new to the MagicMirror world and Node.js, this is my first attempt to modify a module. There are probably lot's of things that could have been done better. :)
@@ -43,7 +38,6 @@ Module on the Right side of the Mirror:
 This is my own mirrors view (Top Center) using some addition in the custom.css [see below](#custom-css)
 
 ![Sonos Module Custom CSS](https://github.com/Snille/MMM-Sonos/blob/master/.github/Sonos-Custom-CSS.png)
->>>>>>> 211d706417dc89305e370b743a62290bb2e9d117
 
 
 ## Usage
@@ -55,22 +49,6 @@ _Prerequisites_
 
 ### Installation
 
-<<<<<<< HEAD
-Navigate into your MagicMirror's modules folder:
-
-```shell
-cd ~/MagicMirror/modules
-```
-Clone this repository:
-```shell
-git clone https://github.com/CFenner/MMM-Sonos
-```
-Navigate to the new MMM-Sonos folder and install the node dependencies.
-```shell
-cd MMM-Sonos/ && npm install --production
-```
-Configure the module in your config.js file.
-=======
 In your terminal, go to your MagicMirror's Module folder:
 
 ```
@@ -93,7 +71,6 @@ npm install request
 
 
 Add some [config entries](#configuration) to your config.js file. After that the content will be added to your mirror.
->>>>>>> 211d706417dc89305e370b743a62290bb2e9d117
 
 ### Configuration
 
@@ -102,29 +79,17 @@ To run the module properly, you need to add the following data to your config.js
 ```
 {
 	module: 'MMM-Sonos',
-<<<<<<< HEAD
-	position: 'top_right', // you may choose any location
-	config: {}
-=======
 	header: "Playing on SONOS",
 	position: "top_center", // This can be any of the regions, best results in center regions
 	classes: "default everyone",
 	config: {
 		// See 'Configuration options' for more information.
 	}
->>>>>>> 211d706417dc89305e370b743a62290bb2e9d117
 }
 ```
 
 Here are the configuration options to configure the module.
 
-<<<<<<< HEAD
-| Option | Description | Default |
-|---|---|---|
-|`showStoppedRoom`|Trigger the visualization of stopped rooms.|`true`|
-|`showAlbumArt`|Trigger the visualization of the album art.|`true`|
-|`showRoomName`|Trigger the visualization of the room name.|`true`|
-=======
 | Option | Description |
 |---|---| 
 |`showStoppedRoom`|Trigger the visualization of stopped rooms.<br><br>**Default value:** `true`|
@@ -178,7 +143,6 @@ Here is my CSS settings for the module that I have added to my custom.css to giv
 }
 /*****************************************************/
 ```
->>>>>>> 211d706417dc89305e370b743a62290bb2e9d117
 
 ### Known Issues
 
