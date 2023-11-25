@@ -81,9 +81,6 @@
 		if (track && track.indexOf("x-sonosapi-stream:") == 0) {
 			track = undefined;
 		}
-		if (track && track.length > 44) {
-			track = track.substring(0, 40) + "&nbsp;...";
-		}
 		if (track === (".")) {
 			track = undefined;
 		}
@@ -117,8 +114,8 @@
 		room: '<div class="room xsmall">{0}</div>',
 		song: '<div>{0}</div>',
 		artistBlock: '<div class="name normal medium">{0}</div>',
-		artist: '<div>{0}</div>',
-		artistAndTrack: '<div>{0}</div><div>{1}</div>',
+		artist: '<div class="artist">{0}</div>',
+		artistAndTrack: '<div class="artist">{0}</div><div class="track">{1}</div>',
 		art: '<div class="art"><img src="{0}"/></div>'
 	},
 	getScripts: function() {

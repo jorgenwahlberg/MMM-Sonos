@@ -11,6 +11,19 @@
 .sonos ul .name {
   padding: 0 .25em;
 }
+
+.sonos ul .artist {
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+}
+
+.sonos ul .track {
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+}
+
 .sonos ul .art img {
   height: 100px;
 }
