@@ -112,7 +112,7 @@
 		loading: '<div class="dimmed light small">Loading music ...</div>',
 		roomWrapper: '<li>{0}</li>',
 		room: '<div class="room xsmall">{0}</div>',
-		song: '<div>{0}</div>',
+		song: '<div class="song">{0}</div>',
 		artistBlock: '<div class="name normal medium">{0}</div>',
 		artist: '<div class="artist">{0}</div>',
 		artistAndTrack: '<div class="artist">{0}</div><div class="track">{1}</div>',
