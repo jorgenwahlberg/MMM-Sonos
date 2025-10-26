@@ -85,8 +85,10 @@ The module includes automatic track info fetching for Norwegian NRK Radio statio
 1. **Station Detection** (node_helper.js:31): The `detectNrkStation()` method identifies NRK stations by iterating through configured stations in `nrk-stations.json` and checking if the Sonos URI starts with any of the configured `sonosUri` values
 
 2. **API Fetching** (node_helper.js:45): The `fetchNrkTrackInfo()` method retrieves real-time track data from NRK's public API endpoint `https://psapi.nrk.no/channels/<stationId>/liveelements`
+   - Finds the segment where `relativeTimeType === "Present"` (NRK marks the currently playing segment)
+   - Falls back to Sonos data if no "Present" segment is found
 
-3. **Data Enrichment** (node_helper.js:94): The `processSonosData()` method:
+3. **Data Enrichment** (node_helper.js:109): The `processSonosData()` method:
    - Iterates through all zones to detect NRK stations
    - Makes parallel API calls using Promise.all for multiple NRK stations
    - Merges NRK track info into the zone's currentTrack data:
@@ -119,12 +121,14 @@ No code changes required when adding stations.
 
 ### NRK API Response
 
-The NRK API returns an array of track objects. The module uses the **last element** which represents the currently playing track. Key fields used:
+The NRK API returns an array of track/segment objects. The module finds the currently playing segment by looking for `relativeTimeType === "Present"`. Key fields used:
+- `relativeTimeType`: Indicates timing - "Present" marks the currently playing segment, "Past" for previous, "Future" for upcoming
 - `programTitle`: Program name (e.g., "Helgen er best") - combined with station name for Artist display
 - `title`: Track/song title - used in Track display
 - `description`: Artist name(s) - used in Track display
 - `imageUrl`: Album artwork URL
-- `relativeTimeType`: "Present" indicates currently playing track
+
+**Segment Selection**: The module iterates through all segments and selects the one where `relativeTimeType === "Present"`. If no "Present" segment is found, the module falls back to displaying the original Sonos data.
 
 ### Display Format for NRK Stations
 

@@ -63,13 +63,29 @@ module.exports = NodeHelper.create({
           try {
             const tracks = JSON.parse(data);
             if (Array.isArray(tracks) && tracks.length > 0) {
-              // Get the last element (current track)
-              const currentTrack = tracks[tracks.length - 1];
+              // Find the segment where relativeTimeType is "Present"
+              let currentSegment = null;
+              for (let i = 0; i < tracks.length; i++) {
+                const segment = tracks[i];
+                if (segment.relativeTimeType === 'Present') {
+                  currentSegment = segment;
+                  break;
+                }
+              }
+
+              // If no matching segment found, return null (use Sonos data)
+              if (!currentSegment) {
+                console.log('NRK: No segment with relativeTimeType "Present" found');
+                callback(null);
+                return;
+              }
+
+              // Return the matching segment's data
               callback({
-                programTitle: currentTrack.programTitle || '',
-                trackTitle: currentTrack.title || '',
-                trackArtist: currentTrack.description || '',
-                albumArtUri: currentTrack.imageUrl || ''
+                programTitle: currentSegment.programTitle || '',
+                trackTitle: currentSegment.title || '',
+                trackArtist: currentSegment.description || '',
+                albumArtUri: currentSegment.imageUrl || ''
               });
             } else {
               callback(null);
