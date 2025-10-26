@@ -35,7 +35,14 @@
       "apiUrl": "https://psapi.nrk.no/channels/radio_super/liveelements",
       "livebufferUrl": "https://psapi.nrk.no/radio/channels/livebuffer/radio_super",
       "sonosUri": "x-sonosapi-hls:live%3aradio_super"
-    }
+    },
+    "alltid_nyheter": {
+      "name": "NRK Nyheter",
+      "apiUrl": "https://psapi.nrk.no/channels/alltid_nyheter/liveelements",
+      "livebufferUrl": "https://psapi.nrk.no/radio/channels/livebuffer/alltid_nyheter",
+      "sonosUri": "x-sonosapi-hls:live%3aalltid_nyheter"
+
+  }
 
   }
 }
