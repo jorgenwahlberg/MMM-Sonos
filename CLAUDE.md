@@ -82,15 +82,26 @@ The module includes automatic track info fetching for Norwegian NRK Radio statio
 
 ### How It Works
 
-1. **Station Detection** (node_helper.js:31): The `detectNrkStation()` method identifies NRK stations by iterating through configured stations in `nrk-stations.json` and checking if the Sonos URI starts with any of the configured `sonosUri` values
+1. **Station Detection** (node_helper.js:65): The `detectNrkStation()` method identifies NRK stations by iterating through configured stations in `nrk-stations.json` and checking if the Sonos URI starts with any of the configured `sonosUri` values
 
-2. **API Fetching** (node_helper.js:45): The `fetchNrkTrackInfo()` method retrieves real-time track data from NRK's public API endpoint `https://psapi.nrk.no/channels/<stationId>/liveelements`
-   - Finds the segment where `relativeTimeType === "Present"` (NRK marks the currently playing segment)
-   - Falls back to Sonos data if no "Present" segment is found
+2. **API Fetching with Fallback Chain** (node_helper.js:155): The `fetchNrkTrackInfo()` method uses a three-tier fallback strategy:
+   - **Primary**: Time-based matching with "Present" filter in PSAPI
+     - Fetches from NRK PSAPI endpoint `https://psapi.nrk.no/channels/<stationId>/liveelements`
+     - Filters segments where `relativeTimeType === "Present"`
+     - Among "Present" segments, finds the one where: `currentTime >= startTime && currentTime < (startTime + duration)`
+     - Parses timestamps using `parseNrkTimestamp()` (node_helper.js:30) to handle NRK's `"Date(1761513879000+0100)"` format
+     - Parses ISO 8601 duration format using `parseIsoDuration()` (node_helper.js:51)
+     - Returns program title, track title, artist, and album art from the matching segment
+   - **Secondary**: If no PSAPI segment matches both criteria, calls `fetchNrkLivebuffer()` (node_helper.js:59)
+     - Fetches from NRK livebuffer API `https://psapi.nrk.no/radio/channels/livebuffer/<channelId>`
+     - Uses time-based matching to find current program
+     - Returns only program title (displays as "Station Name - Program Name" with no track details)
+   - **Tertiary**: If livebuffer also fails, returns null to use original Sonos data
 
-3. **Data Enrichment** (node_helper.js:109): The `processSonosData()` method:
+3. **Data Enrichment** (node_helper.js:237): The `processSonosData()` method:
    - Iterates through all zones to detect NRK stations
-   - Makes parallel API calls using Promise.all for multiple NRK stations
+   - **Only enriches zones with `playbackState === "PLAYING"`** - skips paused or stopped zones to avoid unnecessary API calls
+   - Makes parallel API calls using Promise.all for multiple playing NRK stations
    - Merges NRK track info into the zone's currentTrack data:
      - **Artist field**: Combines station name (from Sonos) with program title (from NRK) as "Station Name - Program Name"
      - **Track field**: Combines track title and artist (from NRK) as "Track Title by Artist Name"
@@ -106,6 +117,7 @@ Station mappings are defined in `nrk-stations.json`:
     "mp3": {
       "name": "NRK mP3",
       "apiUrl": "https://psapi.nrk.no/channels/mp3/liveelements",
+      "livebufferUrl": "https://psapi.nrk.no/radio/channels/livebuffer/mp3",
       "sonosUri": "x-sonosapi-hls:live%3amp3"
     }
   }
@@ -114,27 +126,65 @@ Station mappings are defined in `nrk-stations.json`:
 
 **Adding New Stations**: Edit `nrk-stations.json` to add more NRK stations. Required fields:
 - `name`: Display name of the station
-- `apiUrl`: NRK API endpoint for the channel's live elements
+- `apiUrl`: NRK PSAPI endpoint for the channel's live elements (primary data source)
+- `livebufferUrl`: NRK livebuffer API endpoint (fallback for program title)
 - `sonosUri`: The base Sonos URI (without query parameters) used to detect this station
 
 No code changes required when adding stations.
 
 ### NRK API Response
 
-The NRK API returns an array of track/segment objects. The module finds the currently playing segment by looking for `relativeTimeType === "Present"`. Key fields used:
-- `relativeTimeType`: Indicates timing - "Present" marks the currently playing segment, "Past" for previous, "Future" for upcoming
+**PSAPI (Primary)**: Returns an array of track/segment objects. The module uses a two-step filter to find the current segment. Key fields used:
+- `relativeTimeType`: First filter - must be "Present" (not "Past" or "Future")
+- `startTime`: Timestamp in NRK's format `"Date(1761513879000+0100)"` - parsed to extract milliseconds
+- `duration`: ISO 8601 duration format (e.g., "PT3M13S" = 3 minutes 13 seconds)
+- Second filter: current time must be within `[startTime, startTime + duration)`
 - `programTitle`: Program name (e.g., "Helgen er best") - combined with station name for Artist display
 - `title`: Track/song title - used in Track display
 - `description`: Artist name(s) - used in Track display
 - `imageUrl`: Album artwork URL
 
-**Segment Selection**: The module iterates through all segments and selects the one where `relativeTimeType === "Present"`. If no "Present" segment is found, the module falls back to displaying the original Sonos data.
+**Livebuffer API (Fallback)**: Returns a channel object with program entries. The module uses time-based matching to find the current program. Key fields:
+- `channel.entries`: Array of program objects
+- Each entry contains:
+  - `title`: Program name - combined with station name for Artist display
+  - `actualStart`: ISO 8601 timestamp `"2025-10-26T21:03:00Z"` - parsed to milliseconds
+  - `actualEnd`: ISO 8601 timestamp - parsed to milliseconds
+
+**Timestamp Parsing**: NRK APIs use different timestamp formats:
+- **PSAPI**: Custom format `"Date(1761513879000+0100)"` where the number before the timezone is the Unix timestamp in milliseconds
+- **Livebuffer**: Standard ISO 8601 format `"2025-10-26T21:03:00Z"`
+
+The `parseNrkTimestamp()` function (node_helper.js:34) handles both formats automatically using pattern matching and `Date.parse()` for proper time calculations.
+
+**Fallback Strategy**:
+1. Module filters PSAPI segments where `relativeTimeType === "Present"`, then among those finds one where:
+   - `currentTime >= startTime`
+   - `currentTime < (startTime + duration)` (duration is parsed from ISO 8601 format)
+   - If match found: Returns full track info (program, track title, artist, album art)
+2. If no PSAPI segment matches both criteria, fetches from livebuffer API:
+   - Iterates through `channel.entries` array
+   - Finds program where `currentTime >= actualStart && currentTime < actualEnd`
+   - Returns only program title (no track details)
+3. If livebuffer API also fails (no matching program or API errors), falls back to original Sonos data
+
+**Debugging**: The module logs detailed information about:
+- Which station is detected and from which URI
+- Which API is being used (PSAPI or livebuffer)
+- What data is returned from each API
+- How the final display fields are constructed
 
 ### Display Format for NRK Stations
 
 When playing NRK Radio stations:
-- **Artist line**: Shows "NRK MP3 - Helgen er best" (station name + program title)
+
+**With PSAPI data (full track info)**:
+- **Artist line**: Shows "NRK mP3 - Helgen er best" (station name + program title)
 - **Track line**: Shows "Superhero by Rat City + Isak Heim" (track title + artist from description)
+
+**With livebuffer fallback (program only)**:
+- **Artist line**: Shows "NRK mP3 - [Program Name]" (station name + program title from livebuffer)
+- **Track line**: No track details displayed (original Sonos data may show if available)
 
 ## Testing with Sonos API
 

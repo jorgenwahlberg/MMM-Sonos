@@ -3,31 +3,37 @@
     "mp3": {
       "name": "NRK mP3",
       "apiUrl": "https://psapi.nrk.no/channels/mp3/liveelements",
+      "livebufferUrl": "https://psapi.nrk.no/radio/channels/livebuffer/mp3",
       "sonosUri": "x-sonosapi-hls:live%3amp3"
     },
     "p1": {
       "name": "NRK P1",
       "apiUrl": "https://psapi.nrk.no/channels/p1/liveelements",
+      "livebufferUrl": "https://psapi.nrk.no/radio/channels/livebuffer/p1",
       "sonosUri": "x-sonosapi-hls:live%3ap1"
     },
     "p2": {
       "name": "NRK P2",
       "apiUrl": "https://psapi.nrk.no/channels/p2/liveelements",
+      "livebufferUrl": "https://psapi.nrk.no/radio/channels/livebuffer/p2",
       "sonosUri": "x-sonosapi-hls:live%3ap2"
     },
     "p3": {
       "name": "NRK P3",
       "apiUrl": "https://psapi.nrk.no/channels/p3/liveelements",
+      "livebufferUrl": "https://psapi.nrk.no/radio/channels/livebuffer/p3",
       "sonosUri": "x-sonosapi-hls:live%3ap3"
     },
     "p13": {
       "name": "NRK P13",
       "apiUrl": "https://psapi.nrk.no/channels/p13/liveelements",
+      "livebufferUrl": "https://psapi.nrk.no/radio/channels/livebuffer/p13",
       "sonosUri": "x-sonosapi-hls:live%3ap13"
     },
     "super": {
       "name": "NRK Radio Super",
       "apiUrl": "https://psapi.nrk.no/channels/radio_super/liveelements",
+      "livebufferUrl": "https://psapi.nrk.no/radio/channels/livebuffer/radio_super",
       "sonosUri": "x-sonosapi-hls:live%3aradio_super"
     }
 
