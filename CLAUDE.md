@@ -82,9 +82,9 @@ The module includes automatic track info fetching for Norwegian NRK Radio statio
 
 ### How It Works
 
-1. **Station Detection** (node_helper.js:31): The `detectNrkStation()` method identifies NRK stations by parsing Sonos URIs matching pattern `x-sonosapi-hls:live%3a<stationId>?...`
+1. **Station Detection** (node_helper.js:31): The `detectNrkStation()` method identifies NRK stations by iterating through configured stations in `nrk-stations.json` and checking if the Sonos URI starts with any of the configured `sonosUri` values
 
-2. **API Fetching** (node_helper.js:47): The `fetchNrkTrackInfo()` method retrieves real-time track data from NRK's public API endpoint `https://psapi.nrk.no/channels/<stationId>/liveelements`
+2. **API Fetching** (node_helper.js:45): The `fetchNrkTrackInfo()` method retrieves real-time track data from NRK's public API endpoint `https://psapi.nrk.no/channels/<stationId>/liveelements`
 
 3. **Data Enrichment** (node_helper.js:94): The `processSonosData()` method:
    - Iterates through all zones to detect NRK stations
@@ -103,13 +103,19 @@ Station mappings are defined in `nrk-stations.json`:
   "stations": {
     "mp3": {
       "name": "NRK mP3",
-      "apiUrl": "https://psapi.nrk.no/channels/mp3/liveelements"
+      "apiUrl": "https://psapi.nrk.no/channels/mp3/liveelements",
+      "sonosUri": "x-sonosapi-hls:live%3amp3"
     }
   }
 }
 ```
 
-**Adding New Stations**: Edit `nrk-stations.json` to add more NRK stations. The station ID must match what appears in the Sonos URI after `live%3a`. No code changes required.
+**Adding New Stations**: Edit `nrk-stations.json` to add more NRK stations. Required fields:
+- `name`: Display name of the station
+- `apiUrl`: NRK API endpoint for the channel's live elements
+- `sonosUri`: The base Sonos URI (without query parameters) used to detect this station
+
+No code changes required when adding stations.
 
 ### NRK API Response
 

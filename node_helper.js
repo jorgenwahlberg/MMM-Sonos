@@ -29,14 +29,12 @@ module.exports = NodeHelper.create({
 
   // Detect NRK station from Sonos URI
   detectNrkStation: function(uri) {
-    if (!uri || typeof uri !== 'string') return null;
+    if (!uri || typeof uri !== 'string' || !this.nrkStations) return null;
 
-    // Match pattern: x-sonosapi-hls:live%3amp3?... or similar
-    // Extract station ID from the URI
-    const match = uri.match(/x-sonosapi-hls:live%3a([^?]+)/i);
-    if (match && match[1]) {
-      const stationId = match[1].toLowerCase();
-      if (this.nrkStations && this.nrkStations[stationId]) {
+    // Iterate through configured stations and match against their Sonos URIs
+    for (const stationId in this.nrkStations) {
+      const station = this.nrkStations[stationId];
+      if (station.sonosUri && uri.startsWith(station.sonosUri)) {
         return stationId;
       }
     }
