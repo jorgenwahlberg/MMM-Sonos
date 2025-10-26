@@ -1,0 +1,24 @@
+{
+  "stations": {
+    "mp3": {
+      "name": "NRK mP3",
+      "apiUrl": "https://psapi.nrk.no/channels/mp3/liveelements"
+    },
+    "p1": {
+      "name": "NRK P1",
+      "apiUrl": "https://psapi.nrk.no/channels/p1/liveelements"
+    },
+    "p2": {
+      "name": "NRK P2",
+      "apiUrl": "https://psapi.nrk.no/channels/p2/liveelements"
+    },
+    "p3": {
+      "name": "NRK P3",
+      "apiUrl": "https://psapi.nrk.no/channels/p3/liveelements"
+    },
+    "p13": {
+      "name": "NRK P13",
+      "apiUrl": "https://psapi.nrk.no/channels/p13/liveelements"
+    }
+  }
+}

@@ -9,10 +9,153 @@ var NodeHelper = require('node_helper');
 var http = require('http');
 var https = require('https');
 var url = require('url');
+var fs = require('fs');
+var path = require('path');
 
 module.exports = NodeHelper.create({
   start: function () {
     console.log('Sonos helper started ...');
+    // Load NRK stations configuration
+    try {
+      const configPath = path.join(__dirname, 'nrk-stations.json');
+      const configData = fs.readFileSync(configPath, 'utf8');
+      this.nrkStations = JSON.parse(configData).stations;
+      console.log('NRK stations configuration loaded');
+    } catch (err) {
+      console.error('Error loading NRK stations configuration:', err);
+      this.nrkStations = {};
+    }
+  },
+
+  // Detect NRK station from Sonos URI
+  detectNrkStation: function(uri) {
+    if (!uri || typeof uri !== 'string') return null;
+
+    // Match pattern: x-sonosapi-hls:live%3amp3?... or similar
+    // Extract station ID from the URI
+    const match = uri.match(/x-sonosapi-hls:live%3a([^?]+)/i);
+    if (match && match[1]) {
+      const stationId = match[1].toLowerCase();
+      if (this.nrkStations && this.nrkStations[stationId]) {
+        return stationId;
+      }
+    }
+    return null;
+  },
+
+  // Fetch current track info from NRK API
+  fetchNrkTrackInfo: function(stationId, callback) {
+    const station = this.nrkStations[stationId];
+    if (!station) {
+      callback(null);
+      return;
+    }
+
+    const apiUrl = station.apiUrl;
+
+    https.get(apiUrl, (res) => {
+      let data = '';
+
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+
+      res.on('end', () => {
+        if (res.statusCode === 200) {
+          try {
+            const tracks = JSON.parse(data);
+            if (Array.isArray(tracks) && tracks.length > 0) {
+              // Get the last element (current track)
+              const currentTrack = tracks[tracks.length - 1];
+              callback({
+                programTitle: currentTrack.programTitle || '',
+                trackTitle: currentTrack.title || '',
+                trackArtist: currentTrack.description || '',
+                albumArtUri: currentTrack.imageUrl || ''
+              });
+            } else {
+              callback(null);
+            }
+          } catch (err) {
+            console.error('Error parsing NRK API response:', err);
+            callback(null);
+          }
+        } else {
+          console.error(`NRK API request failed. Status code: ${res.statusCode}`);
+          callback(null);
+        }
+      });
+    }).on('error', (err) => {
+      console.error('NRK API request error:', err);
+      callback(null);
+    });
+  },
+
+  // Process Sonos data and enrich with NRK track info
+  processSonosData: function(zonesData) {
+    const self = this;
+
+    // Collect promises for all NRK stations
+    const nrkPromises = [];
+    const nrkZoneIndices = [];
+
+    zonesData.forEach((zone, zoneIndex) => {
+      if (zone.coordinator && zone.coordinator.state && zone.coordinator.state.currentTrack) {
+        const uri = zone.coordinator.state.currentTrack.uri;
+        const stationId = self.detectNrkStation(uri);
+
+        if (stationId) {
+          // Create a promise for fetching NRK track info
+          const promise = new Promise((resolve) => {
+            self.fetchNrkTrackInfo(stationId, (nrkTrackInfo) => {
+              resolve({ zoneIndex, nrkTrackInfo });
+            });
+          });
+          nrkPromises.push(promise);
+          nrkZoneIndices.push(zoneIndex);
+        }
+      }
+    });
+
+    // Wait for all NRK API calls to complete
+    if (nrkPromises.length > 0) {
+      Promise.all(nrkPromises).then((results) => {
+        // Merge NRK track info into zones data
+        results.forEach((result) => {
+          if (result.nrkTrackInfo) {
+            const zone = zonesData[result.zoneIndex];
+            const currentTrack = zone.coordinator.state.currentTrack;
+
+            // Get station name from Sonos data
+            const stationName = currentTrack.stationName || currentTrack.title || '';
+
+            // Artist: "Station Name - Program Name"
+            currentTrack.artist = stationName +
+              (result.nrkTrackInfo.programTitle ? ' - ' + result.nrkTrackInfo.programTitle : '');
+
+            // Track: "Track Title by Track Artist"
+            if (result.nrkTrackInfo.trackTitle && result.nrkTrackInfo.trackArtist) {
+              currentTrack.title = result.nrkTrackInfo.trackTitle + ' by ' + result.nrkTrackInfo.trackArtist;
+            } else if (result.nrkTrackInfo.trackTitle) {
+              currentTrack.title = result.nrkTrackInfo.trackTitle;
+            } else if (result.nrkTrackInfo.trackArtist) {
+              currentTrack.title = result.nrkTrackInfo.trackArtist;
+            }
+
+            // Update album art if available
+            if (result.nrkTrackInfo.albumArtUri) {
+              currentTrack.absoluteAlbumArtUri = result.nrkTrackInfo.albumArtUri;
+            }
+          }
+        });
+
+        // Send enriched data to frontend
+        self.sendSocketNotification('SONOS_DATA', zonesData);
+      });
+    } else {
+      // No NRK stations, send data as-is
+      self.sendSocketNotification('SONOS_DATA', zonesData);
+    }
   },
 
   // Subclass socketNotificationReceived.
@@ -37,7 +180,9 @@ module.exports = NodeHelper.create({
         res.on('end', () => {
           if (res.statusCode === 200) {
             try {
-              self.sendSocketNotification('SONOS_DATA', JSON.parse(data));
+              const zonesData = JSON.parse(data);
+              // Process and enrich with NRK data
+              self.processSonosData(zonesData);
             } catch (err) {
               console.error('Error parsing JSON:', err);
             }
