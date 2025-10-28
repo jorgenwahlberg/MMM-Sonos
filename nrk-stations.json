@@ -8,8 +8,8 @@
     },
     "p1": {
       "name": "NRK P1",
-      "apiUrl": "https://psapi.nrk.no/channels/p1/liveelements",
-      "livebufferUrl": "https://psapi.nrk.no/radio/channels/livebuffer/p1",
+      "apiUrl": "https://psapi.nrk.no/channels/p1_oslo_akershus/liveelements",
+      "livebufferUrl": "https://psapi.nrk.no/radio/channels/livebuffer/p1_oslo_akershus",
       "sonosUri": "x-sonosapi-hls:live%3ap1"
     },
     "p2": {

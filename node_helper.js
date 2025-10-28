@@ -328,14 +328,14 @@ module.exports = NodeHelper.create({
 
             // Artist: "Station Name - Program Name"
             const newArtist = stationName +
-              (result.nrkTrackInfo.programTitle ? ' - ' + result.nrkTrackInfo.programTitle : '');
+              (result.nrkTrackInfo.programTitle ? ' – ' + result.nrkTrackInfo.programTitle : '');
             console.log(`  - Final Artist field: "${newArtist}"`);
             currentTrack.artist = newArtist;
 
             // Track: "Track Title by Track Artist"
             let newTitle = '';
             if (result.nrkTrackInfo.trackTitle && result.nrkTrackInfo.trackArtist) {
-              newTitle = result.nrkTrackInfo.trackTitle + ' by ' + result.nrkTrackInfo.trackArtist;
+              newTitle = result.nrkTrackInfo.trackTitle + ' – ' + result.nrkTrackInfo.trackArtist;
             } else if (result.nrkTrackInfo.trackTitle) {
               newTitle = result.nrkTrackInfo.trackTitle;
             } else if (result.nrkTrackInfo.trackArtist) {
