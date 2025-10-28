@@ -19,7 +19,8 @@
 		apiBase: 'http://localhost',
 		apiPort: 5005,
 		apiEndpoint: 'zones',
- 		exclude: []
+ 		exclude: [],
+ 		showRooms: [] // if set, only these rooms will be shown
 	},
 	start: function() {
 		Log.info('Starting module: ' + this.name);
@@ -32,6 +33,18 @@
 	update: function(){
 		this.sendSocketNotification('SONOS_UPDATE',this.config.apiBase + ":" + this.config.apiPort + "/" + this.config.apiEndpoint);
 	},
+	shouldShowRoom: function(roomName) {
+		// Check if room is excluded
+		if (this.config.exclude.indexOf(roomName) !== -1) {
+			return false;
+		}
+		// If showRooms is configured, only show rooms in that list
+		if (this.config.showRooms && this.config.showRooms.length > 0) {
+			return this.config.showRooms.indexOf(roomName) !== -1;
+		}
+		// Otherwise show all rooms (that aren't excluded)
+		return true;
+	},
 	render: function(data){
 		var text = '';
 		$.each(data, function (i, item) {
@@ -39,14 +52,14 @@
 			var isGroup = item.members.length > 1;
 			if(isGroup){
 				$.each(item.members, function (j, member) {
-					var isExcluded = this.config.exclude.indexOf(member.roomName) !== -1;
-					room += isExcluded?'':(member.roomName + ', ');
+					var shouldShow = this.shouldShowRoom(member.roomName);
+					room += shouldShow?(member.roomName + ', '):'';
 				}.bind(this));
 				room = room.replace(/, $/,"");
 			}else{
 				room = item.coordinator.roomName;
-				var isExcluded = this.config.exclude.indexOf(room) !== -1;
-				room = isExcluded?'':room;
+				var shouldShow = this.shouldShowRoom(room);
+				room = shouldShow?room:'';
 			}
 			if(room !== ''){
 				var state = item.coordinator.state.playbackState;
