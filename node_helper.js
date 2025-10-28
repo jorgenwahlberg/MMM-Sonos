@@ -11,18 +11,33 @@ var https = require('https');
 var url = require('url');
 var fs = require('fs');
 var path = require('path');
+var winston = require('winston');
+
+// Configure logger
+var logger = winston.createLogger({
+  level: process.env.LOG_LEVEL || 'info',
+  format: winston.format.combine(
+    winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
+    winston.format.printf(({ timestamp, level, message }) => {
+      return `${timestamp} [MMM-Sonos] ${level.toUpperCase()}: ${message}`;
+    })
+  ),
+  transports: [
+    new winston.transports.Console()
+  ]
+});
 
 module.exports = NodeHelper.create({
   start: function () {
-    console.log('Sonos helper started ...');
+    logger.info('Sonos helper started');
     // Load NRK stations configuration
     try {
       const configPath = path.join(__dirname, 'nrk-stations.json');
       const configData = fs.readFileSync(configPath, 'utf8');
       this.nrkStations = JSON.parse(configData).stations;
-      console.log('NRK stations configuration loaded');
+      logger.info('NRK stations configuration loaded');
     } catch (err) {
-      console.error('Error loading NRK stations configuration:', err);
+      logger.error('Error loading NRK stations configuration: ' + err.message);
       this.nrkStations = {};
     }
   },
@@ -91,13 +106,13 @@ module.exports = NodeHelper.create({
     const self = this;
     const station = this.nrkStations[stationId];
     if (!station || !station.livebufferUrl) {
-      console.log(`NRK Livebuffer: No livebuffer URL configured for station ${stationId}`);
+      logger.debug(`No livebuffer URL configured for station ${stationId}`);
       callback(null);
       return;
     }
 
     const livebufferUrl = station.livebufferUrl;
-    console.log(`NRK Livebuffer: Fetching from ${livebufferUrl}`);
+    logger.info(`Fetching track info from NRK Livebuffer API for ${station.name}`);
 
     https.get(livebufferUrl, (res) => {
       let data = '';
@@ -110,19 +125,20 @@ module.exports = NodeHelper.create({
         if (res.statusCode === 200) {
           try {
             const livebufferData = JSON.parse(data);
-            console.log(`NRK Livebuffer: Response received, data structure:`, JSON.stringify(livebufferData).substring(0, 200));
+            logger.debug(`Livebuffer response structure: ${JSON.stringify(livebufferData).substring(0, 200)}`);
 
             // Check if response has channel.entries array
             if (!livebufferData.channel || !livebufferData.channel.entries || !Array.isArray(livebufferData.channel.entries)) {
-              console.log('NRK Livebuffer: No channel.entries array in response');
+              logger.debug('No channel.entries array in livebuffer response');
               callback(null);
               return;
             }
 
-            // Get current time
-            const now = Date.now();
-            console.log(`NRK Livebuffer: Current time: ${now}, looking for matching program`);
-            console.log(`NRK Livebuffer: Found ${livebufferData.channel.entries.length} program entries`);
+            // Get current time and adjust for stream delay
+            const streamDelay = station.streamDelay || 0;
+            const now = Date.now() - streamDelay;
+            logger.debug(`Current time: ${now} (adjusted by ${streamDelay}ms stream delay)`);
+            logger.debug(`Found ${livebufferData.channel.entries.length} program entries in livebuffer`);
 
             // Find program where actualStart <= now < actualEnd
             let currentProgram = null;
@@ -131,20 +147,19 @@ module.exports = NodeHelper.create({
               const actualStart = self.parseNrkTimestamp(program.actualStart);
               const actualEnd = self.parseNrkTimestamp(program.actualEnd);
 
-              console.log(`NRK Livebuffer: Checking program ${i}: "${program.title}"`);
-              console.log(`  - actualStart (raw): ${program.actualStart}, (parsed): ${actualStart}`);
-              console.log(`  - actualEnd (raw): ${program.actualEnd}, (parsed): ${actualEnd}`);
-              console.log(`  - Match check: ${now} >= ${actualStart} && ${now} < ${actualEnd} = ${actualStart && actualEnd && now >= actualStart && now < actualEnd}`);
+              logger.debug(`Checking program ${i}: "${program.title}"`);
+              logger.debug(`  actualStart: ${program.actualStart} (${actualStart}ms), actualEnd: ${program.actualEnd} (${actualEnd}ms)`);
+              logger.debug(`  Match: ${now} >= ${actualStart} && ${now} < ${actualEnd} = ${actualStart && actualEnd && now >= actualStart && now < actualEnd}`);
 
               if (actualStart && actualEnd && now >= actualStart && now < actualEnd) {
                 currentProgram = program;
-                console.log(`NRK Livebuffer: ✓ Found matching program: ${program.title}`);
+                logger.info(`Found program from Livebuffer: "${program.title}"`);
                 break;
               }
             }
 
             if (!currentProgram) {
-              console.log('NRK Livebuffer: No program found matching current time');
+              logger.debug('No program found matching current time in livebuffer');
               callback(null);
               return;
             }
@@ -157,16 +172,16 @@ module.exports = NodeHelper.create({
               albumArtUri: ''
             });
           } catch (err) {
-            console.error('NRK Livebuffer: Error parsing response:', err);
+            logger.error('Error parsing livebuffer response: ' + err.message);
             callback(null);
           }
         } else {
-          console.error(`NRK Livebuffer: Request failed. Status code: ${res.statusCode}`);
+          logger.error(`Livebuffer request failed with status code: ${res.statusCode}`);
           callback(null);
         }
       });
     }).on('error', (err) => {
-      console.error('NRK Livebuffer: Request error:', err);
+      logger.error('Livebuffer request error: ' + err.message);
       callback(null);
     });
   },
@@ -176,13 +191,13 @@ module.exports = NodeHelper.create({
     const self = this;
     const station = this.nrkStations[stationId];
     if (!station) {
-      console.log(`NRK PSAPI: No station configuration found for ${stationId}`);
+      logger.debug(`No station configuration found for ${stationId}`);
       callback(null);
       return;
     }
 
     const apiUrl = station.apiUrl;
-    console.log(`NRK PSAPI: Fetching from ${apiUrl}`);
+    logger.info(`Fetching track info from NRK PSAPI for ${station.name}`);
 
     https.get(apiUrl, (res) => {
       let data = '';
@@ -195,17 +210,17 @@ module.exports = NodeHelper.create({
         if (res.statusCode === 200) {
           try {
             const tracks = JSON.parse(data);
-            console.log(`NRK PSAPI: Response received with ${tracks.length} segments`);
+            logger.debug(`PSAPI response received with ${tracks.length} segments`);
 
             if (Array.isArray(tracks) && tracks.length > 0) {
               // Log all relativeTimeType values for debugging
-              console.log('NRK PSAPI: Checking all relativeTimeType values:');
               const relativeTypes = tracks.map((seg, idx) => `[${idx}]: "${seg.relativeTimeType}"`).join(', ');
-              console.log(`NRK PSAPI: ${relativeTypes}`);
+              logger.debug(`RelativeTimeType values: ${relativeTypes}`);
 
-              // Get current time
-              const now = Date.now();
-              console.log(`NRK PSAPI: Current time: ${now}`);
+              // Get current time and adjust for stream delay
+              const streamDelay = station.streamDelay || 0;
+              const now = Date.now() - streamDelay;
+              logger.debug(`Current time: ${now} (adjusted by ${streamDelay}ms stream delay)`);
 
               // Find segment where relativeTimeType is "Present" AND time matches
               let currentSegment = null;
@@ -220,17 +235,15 @@ module.exports = NodeHelper.create({
                   const durationMs = self.parseIsoDuration(segment.duration);
                   const endTime = startTime + durationMs;
 
-                  console.log(`NRK PSAPI: Checking "Present" segment at index ${i}:`);
-                  console.log(`  - startTime (raw): ${segment.startTime}, (parsed): ${startTime}`);
-                  console.log(`  - duration: ${segment.duration} (${durationMs}ms)`);
-                  console.log(`  - endTime (calculated): ${endTime}`);
-                  console.log(`  - Match check: ${now} >= ${startTime} && ${now} < ${endTime} = ${now >= startTime && now < endTime}`);
+                  logger.debug(`Checking "Present" segment at index ${i}:`);
+                  logger.debug(`  startTime: ${segment.startTime} (${startTime}ms), duration: ${segment.duration} (${durationMs}ms)`);
+                  logger.debug(`  endTime: ${endTime}, Match: ${now >= startTime && now < endTime}`);
 
                   // Second filter: must be within time window
                   if (now >= startTime && now < endTime) {
                     currentSegment = segment;
                     matchingIndex = i;
-                    console.log(`NRK PSAPI: ✓ Found matching segment at index ${i} - Program: "${segment.programTitle}", Track: "${segment.title}", Artist: "${segment.description}"`);
+                    logger.info(`Found track from PSAPI: "${segment.title}" by ${segment.description} (Program: "${segment.programTitle}")`);
                     break;
                   }
                 }
@@ -238,7 +251,7 @@ module.exports = NodeHelper.create({
 
               // If no matching segment found, fall back to livebuffer API
               if (!currentSegment) {
-                console.log(`NRK PSAPI: No segment matched both "Present" and time criteria, trying livebuffer API`);
+                logger.debug('No PSAPI segment matched both "Present" and time criteria, trying livebuffer API');
                 self.fetchNrkLivebuffer(stationId, callback);
                 return;
               }
@@ -252,22 +265,22 @@ module.exports = NodeHelper.create({
               });
             } else {
               // No tracks in response, try livebuffer API
-              console.log('NRK PSAPI: No segments in response, trying livebuffer API');
+              logger.debug('No segments in PSAPI response, trying livebuffer API');
               self.fetchNrkLivebuffer(stationId, callback);
             }
           } catch (err) {
-            console.error('NRK PSAPI: Error parsing response:', err);
+            logger.error('Error parsing PSAPI response: ' + err.message);
             // Try livebuffer API on parse error
             self.fetchNrkLivebuffer(stationId, callback);
           }
         } else {
-          console.error(`NRK PSAPI: Request failed. Status code: ${res.statusCode}`);
+          logger.error(`PSAPI request failed with status code: ${res.statusCode}`);
           // Try livebuffer API on request failure
           self.fetchNrkLivebuffer(stationId, callback);
         }
       });
     }).on('error', (err) => {
-      console.error('NRK PSAPI: Request error:', err);
+      logger.error('PSAPI request error: ' + err.message);
       // Try livebuffer API on request error
       self.fetchNrkLivebuffer(stationId, callback);
     });
@@ -288,14 +301,16 @@ module.exports = NodeHelper.create({
 
         // Only enrich data for zones that are actually playing
         if (playbackState !== 'PLAYING') {
-          console.log(`NRK Detection: Zone ${zoneIndex} playback state is "${playbackState}", skipping enrichment`);
+          logger.debug(`Zone ${zoneIndex} playback state is "${playbackState}", skipping enrichment`);
           return;
         }
 
         const stationId = self.detectNrkStation(uri);
 
         if (stationId) {
-          console.log(`NRK Detection: Detected NRK station "${stationId}" in zone ${zoneIndex} (URI: ${uri}, playbackState: ${playbackState})`);
+          const stationName = self.nrkStations[stationId].name;
+          logger.info(`Detected NRK station: ${stationName}`);
+          logger.debug(`Station ID: ${stationId}, Zone: ${zoneIndex}, URI: ${uri}`);
           // Create a promise for fetching NRK track info
           const promise = new Promise((resolve) => {
             self.fetchNrkTrackInfo(stationId, (nrkTrackInfo) => {
@@ -320,16 +335,13 @@ module.exports = NodeHelper.create({
             // Get station name from Sonos data
             const stationName = currentTrack.stationName || currentTrack.title || '';
 
-            console.log(`NRK Data Enrichment: Applying NRK data to zone`);
-            console.log(`  - Station Name (from Sonos): "${stationName}"`);
-            console.log(`  - Program Title (from NRK): "${result.nrkTrackInfo.programTitle}"`);
-            console.log(`  - Track Title (from NRK): "${result.nrkTrackInfo.trackTitle}"`);
-            console.log(`  - Track Artist (from NRK): "${result.nrkTrackInfo.trackArtist}"`);
+            logger.debug(`Enriching zone ${result.zoneIndex} with NRK data:`);
+            logger.debug(`  Station: "${stationName}", Program: "${result.nrkTrackInfo.programTitle}"`);
+            logger.debug(`  Track: "${result.nrkTrackInfo.trackTitle}", Artist: "${result.nrkTrackInfo.trackArtist}"`);
 
             // Artist: "Station Name - Program Name"
             const newArtist = stationName +
               (result.nrkTrackInfo.programTitle ? ' – ' + result.nrkTrackInfo.programTitle : '');
-            console.log(`  - Final Artist field: "${newArtist}"`);
             currentTrack.artist = newArtist;
 
             // Track: "Track Title by Track Artist"
@@ -343,29 +355,28 @@ module.exports = NodeHelper.create({
             }
 
             if (newTitle) {
-              console.log(`  - Final Track field: "${newTitle}"`);
               currentTrack.title = newTitle;
-            } else {
-              console.log(`  - No track info from NRK, keeping Sonos title: "${currentTrack.title}"`);
             }
 
             // Update album art if available
             if (result.nrkTrackInfo.albumArtUri) {
-              console.log(`  - Album art: ${result.nrkTrackInfo.albumArtUri}`);
+              logger.debug(`  Album art: ${result.nrkTrackInfo.albumArtUri}`);
               currentTrack.absoluteAlbumArtUri = result.nrkTrackInfo.albumArtUri;
             }
+
+            logger.info(`Enriched display: "${newArtist}" / "${newTitle}"`);
           } else {
-            console.log(`NRK Data Enrichment: No NRK data available for zone ${result.zoneIndex}, using Sonos data`);
+            logger.debug(`No NRK data available for zone ${result.zoneIndex}, using Sonos data`);
           }
         });
 
         // Send enriched data to frontend
-        console.log('NRK Data Enrichment: Sending enriched data to frontend');
+        logger.debug('Sending enriched data to frontend');
         self.sendSocketNotification('SONOS_DATA', zonesData);
       });
     } else {
       // No NRK stations, send data as-is
-      console.log('NRK Data Enrichment: No NRK stations detected, sending Sonos data as-is');
+      logger.debug('No NRK stations detected, sending Sonos data as-is');
       self.sendSocketNotification('SONOS_DATA', zonesData);
     }
   },
@@ -378,6 +389,8 @@ module.exports = NodeHelper.create({
       // Parse the URL to determine the protocol.
       const parsedUrl = new url.URL(targetUrl);
       const protocol = parsedUrl.protocol === 'https:' ? https : http;
+
+      logger.debug(`Fetching Sonos data from ${targetUrl}`);
 
       // Make the HTTP or HTTPS request.
       const req = protocol.get(targetUrl, (res) => {
@@ -393,20 +406,21 @@ module.exports = NodeHelper.create({
           if (res.statusCode === 200) {
             try {
               const zonesData = JSON.parse(data);
+              logger.debug(`Received Sonos data for ${zonesData.length} zone(s)`);
               // Process and enrich with NRK data
               self.processSonosData(zonesData);
             } catch (err) {
-              console.error('Error parsing JSON:', err);
+              logger.error('Error parsing Sonos JSON response: ' + err.message);
             }
           } else {
-            console.error(`Request failed. Status code: ${res.statusCode}`);
+            logger.error(`Sonos API request failed with status code: ${res.statusCode}`);
           }
         });
       });
 
       // Handle request errors.
       req.on('error', (err) => {
-        console.error('Request error:', err);
+        logger.error('Sonos API request error: ' + err.message);
       });
 
       // End the request.

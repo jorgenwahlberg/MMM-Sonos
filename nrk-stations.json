@@ -4,43 +4,50 @@
       "name": "NRK mP3",
       "apiUrl": "https://psapi.nrk.no/channels/mp3/liveelements",
       "livebufferUrl": "https://psapi.nrk.no/radio/channels/livebuffer/mp3",
-      "sonosUri": "x-sonosapi-hls:live%3amp3"
+      "sonosUri": "x-sonosapi-hls:live%3amp3",
+      "streamDelay": 10000
     },
     "p1": {
       "name": "NRK P1",
       "apiUrl": "https://psapi.nrk.no/channels/p1_oslo_akershus/liveelements",
       "livebufferUrl": "https://psapi.nrk.no/radio/channels/livebuffer/p1_oslo_akershus",
-      "sonosUri": "x-sonosapi-hls:live%3ap1"
+      "sonosUri": "x-sonosapi-hls:live%3ap1",
+      "streamDelay": 10000
     },
     "p2": {
       "name": "NRK P2",
       "apiUrl": "https://psapi.nrk.no/channels/p2/liveelements",
       "livebufferUrl": "https://psapi.nrk.no/radio/channels/livebuffer/p2",
-      "sonosUri": "x-sonosapi-hls:live%3ap2"
+      "sonosUri": "x-sonosapi-hls:live%3ap2",
+      "streamDelay": 10000
     },
     "p3": {
       "name": "NRK P3",
       "apiUrl": "https://psapi.nrk.no/channels/p3/liveelements",
       "livebufferUrl": "https://psapi.nrk.no/radio/channels/livebuffer/p3",
-      "sonosUri": "x-sonosapi-hls:live%3ap3"
+      "sonosUri": "x-sonosapi-hls:live%3ap3",
+      "streamDelay": 10000
     },
     "p13": {
       "name": "NRK P13",
       "apiUrl": "https://psapi.nrk.no/channels/p13/liveelements",
       "livebufferUrl": "https://psapi.nrk.no/radio/channels/livebuffer/p13",
-      "sonosUri": "x-sonosapi-hls:live%3ap13"
+      "sonosUri": "x-sonosapi-hls:live%3ap13",
+      "streamDelay": 10000
     },
     "super": {
       "name": "NRK Radio Super",
       "apiUrl": "https://psapi.nrk.no/channels/radio_super/liveelements",
       "livebufferUrl": "https://psapi.nrk.no/radio/channels/livebuffer/radio_super",
-      "sonosUri": "x-sonosapi-hls:live%3aradio_super"
+      "sonosUri": "x-sonosapi-hls:live%3aradio_super",
+      "streamDelay": 10000
     },
     "alltid_nyheter": {
       "name": "NRK Nyheter",
       "apiUrl": "https://psapi.nrk.no/channels/alltid_nyheter/liveelements",
       "livebufferUrl": "https://psapi.nrk.no/radio/channels/livebuffer/alltid_nyheter",
-      "sonosUri": "x-sonosapi-hls:live%3aalltid_nyheter"
+      "sonosUri": "x-sonosapi-hls:live%3aalltid_nyheter",
+      "streamDelay": 10000
 
   }
 
