@@ -65,11 +65,21 @@
 			var roomName = '';
 			var isGroup = item.members.length > 1;
 			if(isGroup){
+				// Check if any member should be shown
+				var shouldShowGroup = false;
 				item.members.forEach(function(member) {
-					var shouldShow = self.shouldShowRoom(member.roomName);
-					roomName += shouldShow?(member.roomName + ', '):'';
+					if (self.shouldShowRoom(member.roomName)) {
+						shouldShowGroup = true;
+					}
 				});
-				roomName = roomName.replace(/, $/,"");
+
+				// If at least one member should be shown, include all room names
+				if (shouldShowGroup) {
+					item.members.forEach(function(member) {
+						roomName += member.roomName + ', ';
+					});
+					roomName = roomName.replace(/, $/,"");
+				}
 			}else{
 				roomName = item.coordinator.roomName;
 				var shouldShow = self.shouldShowRoom(roomName);
