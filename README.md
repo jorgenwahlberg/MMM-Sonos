@@ -2,42 +2,19 @@
 [![API](https://img.shields.io/badge/api-Sonos-orange.svg)](https://github.com/jishi/node-sonos-http-api)
 [![License](https://img.shields.io/github/license/mashape/apistatus.svg)](https://choosealicense.com/licenses/mit/)
 
-The NPM module "Request" was removed with Magicmirror `v2.16` This has
-led to the fact that Magicmirror can no longer be started under
-Docker, for example. With this fork, the deprecated npm module
-"Request" is installed locally in the module's directory.
-
 # MMM-Sonos
 
 # MagicMirror-Sonos-Module
 
+This fork now differs quite a lot from the other MMM-Sonos modules. When playing radio stations from NRK (Norwegian Broadcasting) using their Sonos app, it looks up program and track info and displays it. Other sources use info from node-sonos-http-api.
+
 This is an adaption and modification of of [Vaggan's](https://github.com/Vaggan) [MagicMirror-SonosModule](https://github.com/Vaggan/MagicMirror-SonosModule) and [CFenner's](https://github.com/CFenner) [MagicMirror-SonosModule](https://github.com/CFenner/MagicMirror-Sonos-Module). It was modified to get some enhancements in visualisation an configuration. Also the module hides itself when not playing now.
 
-Note from Snille: I'm new to the MagicMirror world and Node.js, this is my first attempt to modify a module. There are probably lot's of things that could have been done better. :)
+Screenshots:
 
-When starting the Mirror:
+![Sonoe module with album art, ordinary music source](MMM-Sonos-Screenshot-music.png)
 
-![Sonos Module Loading](https://github.com/Snille/MMM-Sonos/blob/master/.github/Sonos-Loading.png)
-
-Module on the Left side of the Mirror:
-
-![Sonos Module Left](https://github.com/Snille/MMM-Sonos/blob/master/.github/Sonos-Left.png)
-
-Module in the Center of the Mirror:
-
-![Sonos Module Center](https://github.com/Snille/MMM-Sonos/blob/master/.github/Sonos-Center.png)
-
-Module in the Center of the Mirror playing in 3 different zones:
-
-![Sonos Module Center](https://github.com/Snille/MMM-Sonos/blob/master/.github/Sonos-Multizone.png)
-
-Module on the Right side of the Mirror:
-
-![Sonos Module Right](https://github.com/Snille/MMM-Sonos/blob/master/.github/Sonos-Right.png)
-
-This is my own mirrors view (Top Center) using some addition in the custom.css [see below](#custom-css)
-
-![Sonos Module Custom CSS](https://github.com/Snille/MMM-Sonos/blob/master/.github/Sonos-Custom-CSS.png)
+![Sonos module with album art, enriched by NRK metadata](MMM-Sonos-Screenshot.png)
 
 
 ## Usage
@@ -95,53 +72,37 @@ Here are the configuration options to configure the module.
 |`showStoppedRoom`|Trigger the visualization of stopped rooms.<br><br>**Default value:** `true`|
 |`showAlbumArt`|Trigger the visualization of the album art.<br><br>**Default value:** `true`|
 |`showRoomName`|Trigger the visualization of the room name.<br><br>**Default value:** `true`|
-|`preRoomText`|Text to be displayed before the zone name.<br><br>**Default value:** `Zone: `|
-|`preArtistText`|Text to be displayed before the artist name.<br><br>**Default value:** `Artist: `|
-|`preTrackText`|Text to be displayed before the track name.<br><br>**Default value:** `Track: `|
-|`preTypeText`|Text to be displayed before the source name.<br><br>**Default value:** `Source: `|
 |`animationSpeed`|Lenght of the fade animation.<br><br>**Default value:** `1000`|
 |`updateInterval`|Update interval.<br><br>**Default value:** `0.5`|
 |`apiBase`|http link to the SONOS API.<br><br>**Default value:** `http://localhost'`|
 |`apiPort`|SONOS API port.<br><br>**Default value:** `5005`|
 |`apiEndpoint`|Link to the "zones" information on the SONOS API.<br><br>**Default value:** `zones`|
 |`exclude`|Zones names to exclude ["Secret-Room","Greenhouse"].<br><br>**Default value:** `[]`|
+|`includeRooms`|Zones names to include. If set, only show these zones or groups containing these zones. Zones in the exclude array are still excluded. ["Secret-Room","Greenhouse"].<br><br>**Default value:** `[]`|
 
 ### Custom-CSS
 
 Here is my CSS settings for the module that I have added to my custom.css to give it the exta special look. :)
 
 ```
-/* Sonos --------------------------------------------*/
-.sonos ul .type {
-    font-size: 12px;
-	padding: 0px 0px;
-	line-height: 12px;
-	width: 260px;
+
+.sonos ul li .name {
+  padding: 0 0 0 0;
+  max-width: calc(100% - 120px);
 }
-.sonos ul .room {
-    font-size: 16px;
-	padding: 0px 0px;
-	line-height: 16px;
-	width: 260px;
+
+.sonos ul li .room {
+  padding: 0 0 15px 0;
 }
-.sonos ul .song {
-	padding: 0px 0px;
-	position: relative;
+
+.sonos ul li .art {
+  padding: 0 0.25em 0 0;
 }
-.sonos ul .art img {
-    height: 60px;
-    width: 60px;
-	border-radius: 50%;
-	margin: 0px 0px;
-	border: 2px solid #FFF;
+
+.sonos ul li .art img {
+  background-color: #fff;
 }
-.sonos ul .name {
-    width: 200px;
-    font-size: 16px;
-	padding: 0px 4px;
-	line-height: 16px;
-}
-/*****************************************************/
+
 ```
 
 ### Known Issues

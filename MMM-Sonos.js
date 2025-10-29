@@ -9,10 +9,6 @@
 	defaults: {
 		showStoppedRoom: true,
 		showAlbumArt: true,
-		preRoomText: 'Zone: ',
-		preArtistText: 'Artist: ',
-		preTrackText: 'Track: ',
-		preTypeText: 'Source: ',
 		showRoomName: true,
 		animationSpeed: 1000,
 		updateInterval: 0.5, // every 0.5 minutes
